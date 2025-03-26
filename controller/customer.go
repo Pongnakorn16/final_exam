@@ -14,7 +14,10 @@ type LoginRequest struct {
 
 func CustomerController(router *gin.Engine) {
 
-	router.POST("/auth/login", get_login)
+	routes := router.Group("/customer")
+	{
+		routes.POST("login", get_login)
+	}
 }
 
 func get_login(c *gin.Context) {
