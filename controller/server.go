@@ -13,7 +13,7 @@ func StartServer() {
 	})
 	//Load Controllers
 	CustomerController(router)
-	// PersonController(router)
+	ProductController(router)
 
 	router.Run()
 }
