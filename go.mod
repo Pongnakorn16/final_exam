@@ -1,0 +1,3 @@
+module final_exam
+
+go 1.24.0
