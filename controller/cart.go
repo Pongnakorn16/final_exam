@@ -15,6 +15,7 @@ func CartController(router *gin.Engine) {
 	routes := router.Group("/cart")
 	{
 		routes.POST("add", addToCart)
+		routes.GET("detail", GetCartDetails)
 	}
 }
 
@@ -66,4 +67,18 @@ func addToCart(c *gin.Context) {
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "Product quantity updated"})
 	}
+}
+
+func GetCartDetails(c *gin.Context) {
+	customerID := c.DefaultQuery("customer_id", "0") // ใช้ query parameter สำหรับ customer_id
+
+	// ค้นหารถเข็นทั้งหมดของลูกค้า
+	cartDetails, err := db.GetCartDetailsByCustomerID(customerID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve cart details: " + err.Error()})
+		return
+	}
+
+	// ส่งข้อมูล cartDetails กลับในรูปแบบ JSON โดยไม่ต้องใช้ DTO
+	c.JSON(http.StatusOK, gin.H{"cart_details": cartDetails})
 }

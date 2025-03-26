@@ -128,3 +128,39 @@ func UpdateProductQuantity(cartItemID, quantity int) error {
 	}
 	return nil
 }
+
+// GetCartDetailsByCustomerID ดึงข้อมูลรถเข็นและสินค้าของลูกค้า
+func GetCartDetailsByCustomerID(customerID string) ([]model.Cart, error) {
+	var carts []model.Cart
+
+	// ดึงข้อมูลรถเข็นของลูกค้า
+	err := Database.Table("cart").
+		Select("cart.cart_id, cart.cart_name").
+		Where("cart.customer_id = ?", customerID).
+		Find(&carts).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// ดึงข้อมูลสินค้าภายในแต่ละรถเข็น
+	for idx, cart := range carts { // ใช้ cart.ID เพื่อดึงข้อมูลที่เกี่ยวข้อง
+		var cartItems []model.CartItem
+
+		// ดึงข้อมูลสินค้าภายในรถเข็น
+		err := Database.Table("cart_item").
+			Select("cart_item.cart_id, cart_item.product_id, cart_item.quantity, product.product_name, product.description, product.price, (cart_item.quantity * product.price) AS total_price").
+			Joins("JOIN product ON cart_item.product_id = product.product_id").
+			Where("cart_item.cart_id = ?", cart.CartID).
+			Scan(&cartItems).Error
+		if err != nil {
+			return nil, err
+		}
+
+		// ถ้ามีสินค้าภายในรถเข็น ให้เพิ่มลงใน Cart
+		for _, cartItem := range cartItems {
+			carts[idx].Items = append(carts[idx].Items, cartItem)
+		}
+	}
+
+	return carts, nil
+}

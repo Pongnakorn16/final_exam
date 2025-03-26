@@ -1,5 +1,6 @@
 package dto
 
+// CartItemRequest สำหรับการเพิ่มสินค้าลงในรถเข็น
 type CartItemRequest struct {
 	CustomerID int    `json:"customer_id" binding:"required"`
 	CartName   string `json:"cart_name" binding:"required"`
