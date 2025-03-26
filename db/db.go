@@ -69,12 +69,62 @@ func UpdatePassword(email, newPassword string) error {
 
 func GetProducts(description string, priceMin, priceMax float64) ([]model.Product, error) {
 	var products []model.Product
+	query := Database.Table("product")
 
-	// ค้นหาสินค้าจากคำอธิบายและช่วงราคา
-	result := Database.Where("description LIKE ? AND price BETWEEN ? AND ?", "%"+description+"%", priceMin, priceMax).Find(&products)
+	// ค้นหาจาก description หากมี
+	if description != "" {
+		query = query.Where("description LIKE ?", "%"+description+"%")
+	}
+
+	// ค้นหาจากราคา หากมี
+	if priceMin > 0 {
+		query = query.Where("price >= ?", priceMin)
+	}
+	if priceMax > 0 {
+		query = query.Where("price <= ?", priceMax)
+	}
+
+	result := query.Find(&products)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
 	return products, nil
+}
+
+// ฟังก์ชันค้นหารถเข็นของลูกค้า
+func GetCartByName(customerID int, cartName string) (model.Cart, error) {
+	var cart model.Cart
+	result := Database.Where("customer_id = ? AND cart_name = ?", customerID, cartName).First(&cart)
+	if result.Error != nil {
+		return cart, result.Error
+	}
+	return cart, nil
+}
+
+// ฟังก์ชันเพิ่มสินค้าในรถเข็น
+func AddProductToCart(cartID, productID, quantity int) error {
+	newCartItem := model.CartItem{
+		CartID:    cartID,
+		ProductID: productID,
+		Quantity:  quantity,
+	}
+	if err := Database.Create(&newCartItem).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// ฟังก์ชันอัปเดตจำนวนสินค้าที่มีในรถเข็น
+func UpdateProductQuantity(cartItemID, quantity int) error {
+	var cartItem model.CartItem
+	result := Database.Where("cart_item_id = ?", cartItemID).First(&cartItem)
+	if result.Error != nil {
+		return result.Error
+	}
+	cartItem.Quantity += quantity
+	if err := Database.Save(&cartItem).Error; err != nil {
+		return err
+	}
+	return nil
 }

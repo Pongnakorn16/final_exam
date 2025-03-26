@@ -14,6 +14,7 @@ func StartServer() {
 	//Load Controllers
 	CustomerController(router)
 	ProductController(router)
+	CartController(router)
 
 	router.Run()
 }

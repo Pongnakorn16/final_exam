@@ -25,7 +25,7 @@ func get_search(c *gin.Context) {
 		return
 	}
 
-	// เรียกใช้ GetProducts เพื่อค้นหาสินค้า
+	// เรียกใช้ GetProducts เพื่อค้นหาจาก description และ price
 	products, err := db.GetProducts(req.Description, req.PriceMin, req.PriceMax)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
